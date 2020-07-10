@@ -11,11 +11,11 @@ logger = logger.Logger("Dir")
 def cleanup(TRACK_INFO, index, datatype):
     """Move the song from temp to $HOME/Music dir."""
     try:
-        SONG = glob.glob(os.path.join(
+        SONGS = glob.glob(os.path.join(
                                 defaults.DEFAULT.SONG_TEMP_DIR,
                                 '*{}'.format(datatype)
                             ))
-        SONG = SONG[0]
+        SONG = SONGS[0]
 
         SONG_NAME = os.path.basename(SONG)
 
@@ -31,9 +31,13 @@ def cleanup(TRACK_INFO, index, datatype):
                 os.rename(SONG, name + '.mp3')
                 SONG_NAME = name + '.mp3'
                 SONG = SONG_NAME
-        shutil.move(SONG, os.path.join(DIR, SONG_NAME))
+        shutil.copy(SONG, os.path.join(DIR, SONG_NAME))
 
         logger.info('Moved to {}...'.format(DIR))
+        # cleanup cache folder because if there is an error along the way before copy
+        # then the first file will be taken instead of the good one.
+        for song in SONGS:
+            os.remove(song)
         return True
     except Exception as e:
         logger.critical("Failed while moving with error: {}".format(e))

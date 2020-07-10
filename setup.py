@@ -17,10 +17,13 @@ req_pkgs = [
             'lxml',
             'pyxdg',
             'ffmpeg-python',
-            'pysocks',
-            'tensorflow',
-            'inaSpeechSegmenter'
+            'unidecode',
+            'pysocks'
         ]
+
+extra_features = {
+            'noise-clean': ['inaSpeechSegmenter', 'tensorflow']
+        }
 
 
 if __name__ == '__main__':
@@ -42,5 +45,6 @@ if __name__ == '__main__':
         python_requires=">=3.*",
         scripts=['bin/ytmdl'],
         install_requires=req_pkgs,
-        setup_requires=req_pkgs
+        setup_requires=req_pkgs,
+        extras_require=extra_features
     )

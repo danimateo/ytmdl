@@ -16,6 +16,7 @@ import sys
 from colorama import init
 from colorama import Fore, Style
 import argparse
+
 from ytmdl import (
             dir,
             song,
@@ -101,6 +102,11 @@ def arguments():
                         and keep only the music in the file. Useful in songs where there \
                         are speeches, noise etc before/after the start of the song. Default \
                         is false.", action='store_true')
+    parser.add_argument('--cut-start', help="Where to start cutting the song. Format is \
+                                             either hh:mm:ss, mm:ss or ss, zero \
+                                             padded or not", type=str, default=None, metavar="hh:mm:ss")
+    parser.add_argument('--cut-stop', help="Where to stop cutting the song. Format is\
+                         the same as --cut-start", type=str, default=None, metavar="hh:mm:ss")
     parser.add_argument('--version', action='version', version='2020.07.09',
                         help='show the program version number and exit')
 
@@ -329,11 +335,18 @@ def main(args):
     if type(conv_name) is not str:
         logger.critical('ERROR: {}'.format(conv_name))
 
+    if args.cut_start or args.cut_stop:
+        logger.info("Cutting the song...")
+        conv_name = utility.cut_song(conv_name, args.cut_start, args.cut_stop)
 
     # Trim the song if the trim option is passed.
     if args.trim:
         logger.info("Passing the song to get trimmed.")
         trim.Trim(conv_name)
+
+    if args.cut_start or args.cut_stop:
+        logger.info("Cutting the song...")
+        conv_name = utility.cut_song(conv_name, args.cut_start, args.cut_stop)
 
     logger.debug("Skip Meta: {}".format(args.skip_meta))
 
@@ -357,7 +370,7 @@ def main(args):
         # declare a variable to store the option
         option = 0
 
-        if len(TRACK_INFO) == 0:
+        if not TRACK_INFO:
             logger.critical('No data was found!\a')
         else:
             prepend.PREPEND(1)

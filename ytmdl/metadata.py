@@ -1,6 +1,7 @@
 """Define functions related to getting tags."""
 
 import itunespy
+from unidecode import unidecode
 from ytmdl.stringutils import (
     remove_multiple_spaces, remove_punct, compute_jaccard, remove_stopwords,
     check_keywords
@@ -13,12 +14,10 @@ def get_from_itunes(SONG_NAME):
     # Try to get the song data from itunes
     try:
         SONG_INFO = itunespy.search_track(SONG_NAME)
-        # Before returning convert all the track_time values to minutes.
-        for song in SONG_INFO:
-            song.track_time = round(song.track_time / 60000, 2)
         return SONG_INFO
-    except Exception:
-        pass
+    except Exception as e:
+        print("Error: {}".format(e))
+        return None
 
 
 def get_from_gaana(SONG_NAME):
@@ -26,16 +25,18 @@ def get_from_gaana(SONG_NAME):
     try:
         nana = gaana.searchSong(SONG_NAME)
         return nana
-    except Exception:
-        return None
+    except TypeError as e:
+        pass
+    except Exception as e:
+        print("Error: {}".format(e))
 
 
 def _search_tokens(song_name, song_list):
     """Search song in the cache based on simple each word matching."""
     song_name = remove_punct(
-                    remove_stopwords(
-                        remove_multiple_spaces(song_name).lower()
-                    ))
+        remove_stopwords(
+            remove_multiple_spaces(unidecode(song_name)).lower()
+        ))
     tokens1 = song_name.split()
     cached_songs = song_list
 
@@ -45,6 +46,7 @@ def _search_tokens(song_name, song_list):
         name = song.track_name.lower()
         name = remove_punct(name)
         name = remove_multiple_spaces(name)
+        name = unidecode(name)
         tokens2 = name.split()
         match = check_keywords(tokens1, tokens2)
         if match:
@@ -112,7 +114,7 @@ def SEARCH_SONG(q="Tera Buzz", filters=[]):
         rest += data_gaana[10:]
 
     if len(to_be_sorted) == 0:
-        return False
+        return None
 
     # Send the data to get sorted
     sorted_data = _search_tokens(q, to_be_sorted)
