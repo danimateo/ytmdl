@@ -46,9 +46,9 @@ def get_from_gaana(SONG_NAME):
 def _search_tokens(song_name, song_list):
     """Search song in the cache based on simple each word matching."""
     song_name = remove_punct(
-                    remove_stopwords(
-                        remove_multiple_spaces(unidecode(song_name)).lower()
-                    ))
+        remove_stopwords(
+            remove_multiple_spaces(song_name).lower()
+        ))
     tokens1 = song_name.split()
     cached_songs = song_list
 
@@ -102,7 +102,7 @@ def filterSongs(data, filters=[]):
     return (new_tuple + rest)
 
 
-def _create_to_be_sorted_and_rest(provider_data, to_be_sorted, rest, filters):
+def _extend_to_be_sorted_and_rest(provider_data, to_be_sorted, rest, filters):
     """Create the to be sorted and rest lists"""
     # Before passing for sorting filter the songs
     # with the passed args
@@ -125,11 +125,24 @@ def SEARCH_SONG(q="Tera Buzz", filters=[]):
         'gaana': get_from_gaana
     }
 
+    broken_provider_counter = 0
+
     for provider in metadata_providers:
         data_provider = GET_METADATA_ACTIONS.get(
-            provider, lambda x: 'Invalid provider')(q)
-        _create_to_be_sorted_and_rest(
-            data_provider, to_be_sorted, rest, filters)
+            provider, lambda _: None)(q)
+        if data_provider:
+            _extend_to_be_sorted_and_rest(
+                data_provider, to_be_sorted, rest, filters)
+        else:
+            logger.error('"{}" isn\'t implemented'.format(provider))
+            broken_provider_counter += 1
+    
+    # to_be_sorted will be empty and it will return None anyway, no need
+    # to do it here as well
+    if broken_provider_counter == len(metadata_providers):
+        logger.error("{}".format('No metadata provider in the configuration is '
+                                 'implemented. Please change it to something available '
+                                 'or use the --skip-meta flag'))
 
     if not to_be_sorted:
         return None
