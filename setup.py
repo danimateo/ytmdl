@@ -9,7 +9,7 @@ with open("README.md", "r") as fh:
 req_pkgs = [
             'youtube_dl',
             'mutagen',
-            'itunespy',
+            'itunespy==1.5.5',
             'requests',
             'colorama',
             'bs4',
@@ -18,10 +18,13 @@ req_pkgs = [
             'pyxdg',
             'ffmpeg-python',
             'pysocks',
-            'tensorflow',
-            'inaSpeechSegmenter'
+            'unidecode'
         ]
 
+
+extra_features = {
+            'noise-clean': ['inaSpeechSegmenter', 'tensorflow']
+        }
 
 if __name__ == '__main__':
     setuptools.setup(
@@ -42,5 +45,6 @@ if __name__ == '__main__':
         python_requires=">=3.*",
         scripts=['bin/ytmdl'],
         install_requires=req_pkgs,
-        setup_requires=req_pkgs
+        setup_requires=req_pkgs,
+        extras_require=extra_features
     )
